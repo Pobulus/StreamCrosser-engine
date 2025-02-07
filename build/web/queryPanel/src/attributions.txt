@@ -1,0 +1,4 @@
+ACE editor: https://github.com/ajaxorg/ace-builds/
+mxGraph: https://github.com/jgraph/mxgraph
+
+ALL APPROPRIATE LICENSES ARE PROVIDED IN THEIR RESPECTIVE DIRECTORIES

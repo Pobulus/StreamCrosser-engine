@@ -1,0 +1,98 @@
+configName: First Config
+
+streams:
+- name: temp_0
+  schema:
+    - name: _time
+      type: time
+      key: true
+    - name: id
+      type: long
+      key: true
+    - name: temperature
+      type: double
+    - name: roomID
+      type: long
+- name: temp_1
+  schema:
+    - name: _time
+      type: time
+    - name: id
+      type: long
+      key: true
+    - name: temperature
+      type: double
+    - name: humidity
+      type: double
+    - name: roomID
+      type: long
+- name: humid_0
+  schema:
+    - name: _time
+      type: time
+    - name: id
+      type: long
+      key: true
+    - name: humidity
+      type: double
+    - name: roomID
+      type: long
+- name: alert
+  schema:
+    - name: _time
+      type: time
+      key: true
+    - name: id
+      type: long
+      key: true
+    - name: message
+      type: string
+    - name: roomID
+      type: long
+- name: event
+  schema:
+    - name: _time
+      type: time
+      key: true
+    - name: id
+      type: long
+      key: true
+    - name: message
+      type: string
+    - name: urgency
+      type: int
+    - name: roomID
+      type: long
+tables:
+- name: test_table
+  schema:
+    - name: tid
+      type: long
+      key: true
+    - name: desc
+      type: long
+    - name: roomID
+      type: long
+- name: rooms
+  schema:
+    - name: id
+      type: long
+      key: true
+    - name: name
+      type: string
+- name: colors
+  schema:
+    - name: id
+      type: long
+      key: true
+    - name: primary
+      type: bool
+    - name: name
+      type: string
+    - name: r
+      type: int
+    - name: g
+      type: int        
+    - name: b
+      type: int
+      

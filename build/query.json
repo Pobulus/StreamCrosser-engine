@@ -1,0 +1,32 @@
+{
+    "nodes": {
+        "2": {
+            "id": 2,
+            "inputs": [
+                1
+            ],
+            "text": "out",
+            "type": "tabl"
+        },
+        "4": {
+            "id": 4,
+            "inputs": [
+                3
+            ],
+            "text": "out",
+            "type": "tabl"
+        }
+    },
+    "sources": [
+        {
+            "id": 1,
+            "text": "rooms",
+            "type": "slct"
+        },
+        {
+            "id": 3,
+            "text": "colors",
+            "type": "slct"
+        }
+    ]
+}

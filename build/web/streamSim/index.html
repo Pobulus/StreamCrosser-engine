@@ -1,0 +1,140 @@
+<html>
+	<head>
+		<title>Stream Simulator</title>
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+
+		<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+	
+		<style>
+		body{background: #eee; font-family: monospace}
+			#cardHolder {
+				display: flex;
+				max-width: 100vw;
+				position: absolute;
+				flex-wrap: wrap;
+
+			}
+			.card {
+				border: solid 3px black;
+				margin: 0.5rem;
+				padding: 0.7rem;
+			  	display: flex;
+			  	min-width: 30%;
+  				flex-direction: row;
+			}
+			input {
+				max-width: 150px;
+			}
+			.sideways {
+				position: relative;
+				transform: rotate(90deg) translate(0%, 0%);
+			}
+			.titleBox {
+				width: 2rem;
+				border-right: solid black 2px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Input Streams:</h1>
+		<div id="cardHolder"></div>
+
+			<script>
+			function sendData(name, data){
+				fetch(`http://${window.location.host}/str/${name}`, {
+				  method: "POST",
+				  body: JSON.stringify(data),
+				  headers: {
+				    "Content-type": "application/json; charset=UTF-8"
+				  }
+				});
+			}
+			function getRandomInt(min, max) {
+			  const minCeiled = Math.ceil(min);
+			  const maxFloored = Math.floor(max);
+			  return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
+			}
+			
+			function getData(stream){
+				const cols = streams?.[stream];
+				const timestamp = Date.now();
+				const count = $(`#${stream}_count`)?.val() ?? 1;
+				return [...Array(+count).keys()]
+					.map(el  => ([timestamp, ...cols.filter(col => col != "_time").map((col) => getRandomInt($(`#${stream}-${col}-min`).val(), $(`#${stream}-${col}-max`).val()))]));
+			}
+			streams = {
+				stream1: ["id", "value", "locationID","name","test"],
+				stream2: ["id", "value", "locationID"],
+				stream3: ["id", "value", "locationID"],
+				stream4: ["id", "value", "locationID"],
+				stream5: ["id", "value", "locationID"],
+				stream6: ["id", "value", "locationID"],
+				stream7: ["id", "value", "locationID"],
+				stream8: ["id", "value", "locationID"],
+				stream9: ["id", "value", "locationID"],
+			};
+			intervals = {};
+			function handleAuto(stream){
+				const toggle = $(`#${stream}_auto`)?.is(':checked');
+				const delay = $(`#${stream}_delay`)?.val();
+				
+
+				if(toggle) {
+					console.log('starting interval for', stream);
+					intervals[stream] = setInterval(() => sendData(stream, getData(stream)), +delay);
+				} else {
+					console.log('clearing interval for', stream);
+					clearInterval(intervals[stream]);
+				}
+
+			}
+			console.log(Object.entries(streams));
+			const safeStringify = (data) => JSON.stringify(data).replace(/\"/g, "'");
+			console.log('test');
+			const controls = (stream, cols) => cols.filter(col => col !== '_time').map((col) => `
+				<tr><td><label>${col}</label></td><td>
+				<input type="number" id="${stream}-${col}-min" value="0"/></td><td>
+				<input type="number" id="${stream}-${col}-max" value="1"/></td></tr>
+			`).join('');
+			colors = ["#7788aa", "#aa7788", "#77aa88", "#885858", "#bbaa66", "#66bbaa", "#aa66bb", "#b0b0b0",  "#aa8855"];
+
+			
+			
+		</script>
+		<script>
+		async function getStreamConfig() {
+			const newStreamsResp = await fetch(`http://${window.location.host}/str`, {
+				  method: "GET",
+				  headers: {
+				    "Content-type": "application/json; charset=UTF-8"
+				  }
+			});
+			const body = await newStreamsResp.json();
+			streams = Object.fromEntries(body.map((el) => ([el.name, [...el.schema?.map(col => col.name)]])));
+			console.log("fetched streams:", streams);
+			Object.entries(streams).forEach(([stream, cols], index) => $('#cardHolder').append(`
+				<div class="card" style="background:${colors[index % colors.length]}">
+					<div class="titleBox" ><h2 class="sideways">${stream}</h2></div>
+				<div>
+
+					<table>
+					<tr><th>field</th><th>min</th><th>max</th>
+					<tr><td><label>_time</label></td><td colspan="2" style="text-align: center"><i>current time</i></td>
+					${controls(stream, cols)}
+					</table>
+					</div>
+					<div style="padding:0.2rem">
+						<button onclick="sendData('${stream}', getData('${stream}'))">SEND NOW</button><br>
+						<label>delay</label><input id="${stream}_delay" style="width:5rem" type="number" value=1000 /><br>
+						<label>count</label><input id="${stream}_count" style="width:5rem" type="number" value=1 /><br>
+						<label>auto<input id="${stream}_auto" type="checkbox" onchange="handleAuto('${stream}')"/></label>
+					</div>
+				</div>
+
+			`)
+			);
+		}
+		window.onLoad = getStreamConfig();
+		</script>
+	</body>
+</html>

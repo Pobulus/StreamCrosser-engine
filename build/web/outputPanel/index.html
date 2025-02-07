@@ -1,0 +1,163 @@
+<html>
+  <head>
+    <title>Output Panel</title>
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.min.js"
+      integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+      crossorigin="anonymous"
+    ></script>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        background: #eee;
+        font-family: monospace;
+      }
+      #cardHolder {
+        display: flex;
+        max-width: 100vw;
+        position: absolute;
+        flex-wrap: wrap;
+      }
+      .card {
+        border: solid 3px black;
+        margin: 0.5rem;
+        padding: 0.7rem;
+        display: flex;
+        min-width: 30%;
+        flex-direction: row;
+      }
+      input {
+        max-width: 150px;
+      }
+	  td, th {
+		border: solid 2px black;
+		background-color: #eee;
+	  }
+	  th {
+		background-color: #aaa;
+	  }
+	  th.key {
+		background-color: gold;
+	  }
+      .sideways {
+        position: relative;
+        transform: rotate(90deg) translate(-50%, 0%);
+      }
+      .titleBox {
+        width: 2rem;
+        border-right: solid black 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Outputs:<button onclick="updateAll()">Refresh all</button></h1>
+    <div id="cardHolder"></div>
+
+    <script>
+	function updateAll() {
+		Object.keys(outputs).forEach(out => getData(out));
+	}
+      function sendData(name, data) {
+        fetch(`http://${window.location.host}/str/${name}`, {
+          method: "POST",
+          body: JSON.stringify(data),
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        });
+      }
+      function getRandomInt(min, max) {
+        const minCeiled = Math.ceil(min);
+        const maxFloored = Math.floor(max);
+        return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
+      }
+
+	  outputs = {};
+      async function getData(name) {
+		const data = await fetch(`http://${window.location.host}/out`, {
+          method: "POST",
+		  body: name,
+          headers: { "Content-type": "text/plain; charset=UTF-8" },
+        });
+		outputs[name] = await data.json();
+		renderOutputs();
+      }
+      intervals = {};
+      function handleAuto(stream) {
+        const toggle = $(`#${stream}_auto`)?.is(":checked");
+        const delay = $(`#${stream}_delay`)?.val();
+        if (toggle) {
+          console.log("starting interval for", stream);
+          intervals[stream] = setInterval(
+            () => sendData(stream, getData(stream)),
+            +delay
+          );
+        } else {
+          console.log("clearing interval for", stream);
+          clearInterval(intervals[stream]);
+        }
+      }
+      console.log(Object.entries(outputs));
+      const safeStringify = (data) => JSON.stringify(data).replace(/\"/g, "'");
+      console.log("test");
+      
+      colors = [
+        "#7788aa",
+        "#aa7788",
+        "#77aa88",
+        "#885858",
+        "#bbaa66",
+        "#66bbaa",
+        "#aa66bb",
+        "#b0b0b0",
+        "#aa8855",
+      ];
+      function timestampToDate(timestamp) {
+      const date = new Date(timestamp);
+      
+        return date.toISOString();
+      }
+      function dataTable(data) {
+        if (!data) return "<i>no data</i>";
+        let result = "<table><tr>";
+        const timeIndex = data.head.findIndex(prop => prop?.[1] == '_time');
+        result += data.head.map((col, index) => `<th ${data.key.includes(index)  ? 'class="key"' : ''}>${col.join(".")}</th>`).join('');
+        result += "</tr>";
+        result += data.data.map(
+          (row) => `<tr>${row.map((col, index) => `<td>${index == timeIndex ? timestampToDate(col) : col}</td>`).join("")}</tr>`
+        ).join('');
+        result += "</table>";
+        return result;
+      }
+      async function getOutputs() {
+			const newOutputRes = await fetch(`http://${window.location.host}/out`, {
+			method: "GET",
+			headers: { "Content-type": "application/json; charset=UTF-8" },
+			});
+			const body = await newOutputRes.json();
+			body.forEach(tab => outputs[tab] = undefined);
+			console.log("fetched outputs:", outputs);
+			renderOutputs();
+			updateAll();
+		}
+
+	function renderOutputs() {
+		$("#cardHolder").empty();
+		console.log('rendering outputs');
+		Object.entries(outputs).forEach(([output, data], index) =>
+          $("#cardHolder").append(`
+				<div class="card" id="card-${output}" style="background:${colors[index % colors.length]}">
+					<div class="titleBox" ><button style="margin-bottom:10px" onclick="getData('${output}')">🔄</button><h2 class="sideways">${output}</h2></div>
+					<div>
+					${dataTable(data)}
+					</div>
+					<div style="padding:0.2rem">
+						
+					</div>
+				</div>`));
+      }
+      window.onLoad = getOutputs();
+    </script>
+  </body>
+</html>

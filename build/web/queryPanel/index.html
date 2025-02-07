@@ -1,0 +1,433 @@
+<!--
+  Copyright (c) 2006-2013, JGraph Ltd
+  
+  Hierarchical Layout example for mxGraph. This example demonstrates the
+  use of the hierarchical and organic layouts. Note that the hierarchical
+  layout requires another script tag in the head of the page.
+-->
+<html>
+<head>
+	<title>Query Panel</title>
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+
+	<!-- Sets the basepath for the library if not in same directory -->
+	<script type="text/javascript">
+		mxBasePath = './src';
+	</script>
+
+	<!-- Loads and initializes the library -->
+	<script type="text/javascript" src="./src/js/mxClient.js"></script>
+
+	<!-- Example code -->
+	 <style>
+		
+button {
+	margin: 1px !important;
+}
+/* CSS */
+.button-7 {
+  background-color: #0095ff;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  box-shadow: rgba(255, 255, 255, .4) 0 1px 0 0 inset;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  display: inline-block;
+  font-family: -apple-system,system-ui,"Segoe UI","Liberation Sans",sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.15385;
+  margin: 0;
+  outline: none;
+  padding: 8px .8em;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+#queryDisp {
+    position: absolute;
+    z-index: 1000;
+    left: 35%;
+    top: 0%;
+}
+.button-7:hover,
+.button-7:focus {
+  background-color: #07c;
+}
+
+.button-7:focus {
+  box-shadow: 0 0 0 4px rgba(0, 149, 255, .15);
+}
+
+.button-7:active {
+  background-color: #0064bd;
+  box-shadow: none;
+}
+
+
+/* CSS */
+.button-8 {
+  background-color: #e1ecf4;
+  border-radius: 3px;
+  border: 1px solid #7aa7c7;
+  box-shadow: rgba(255, 255, 255, .7) 0 1px 0 0 inset;
+  box-sizing: border-box;
+  color: #39739d;
+  cursor: pointer;
+  display: inline-block;
+  font-family: -apple-system,system-ui,"Segoe UI","Liberation Sans",sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.15385;
+  margin: 0;
+  outline: none;
+  padding: 8px .8em;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+
+.button-8:hover,
+.button-8:focus {
+  background-color: #b3d3ea;
+  color: #2c5777;
+}
+
+.button-8:focus {
+  box-shadow: 0 0 0 4px rgba(0, 149, 255, .15);
+}
+
+.button-8:active {
+  background-color: #a0c7e4;
+  box-shadow: none;
+  color: #2c5777;
+}
+	 </style>
+	
+</head>
+
+<!-- Page passes the container for the graph to the program -->
+<body onload="main(document.getElementById('graphContainer'))" style="margin:4px;">
+
+     <textarea id="query"
+     style="overflow:auto;top:0%;left:0%;height:5%;width:28%;border:gray 1px solid;margin-bottom: 5px;"
+     ></textarea><div id="buttonBox"></div>
+     
+	<!-- Creates a container for the graph with a grid wallpaper. Make sure to define the position
+		and overflow attributes! See comments on the adding of the size-listener on line 54 ff!  -->
+    <div id="input"
+	style="position:absolute;overflow:auto;top:10%;bottom:5px;left:0%;right:5px;height:89%;width:30%;border:gray 1px solid;"
+    ></div>
+    <h2 id="queryDisp">...</h2>
+	<div id="graphContainer"
+		style="position:absolute;overflow:auto;top:10%;bottom:5px;left:30%;right:5px;border:gray 1px solid;">
+	</div>
+	<script src="src/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+	<script>
+		var editor = ace.edit("input");
+		editor.setTheme("ace/theme/monokai");
+		editor.session.setMode("ace/mode/json");
+	</script>
+	<script type="text/javascript">
+	    function sendQueryRequest(event, callback) {
+			const xhr = new XMLHttpRequest();
+			xhr.open("POST", `http://${window.location.host}/query`);
+			xhr.setRequestHeader("Content-Type", "text/plain");
+			const query = document.getElementById("query").value;
+			xhr.send(query);
+			document.getElementById('queryDisp').innerText = query;
+			xhr.responseType = "text";
+			xhr.onload = () => {
+				if (xhr.readyState == 4 && xhr.status == 200) {
+					const rt = xhr.responseText
+					editor.setValue(rt, -1);
+					console.log(rt);
+					const obj = JSON.parse(rt);
+					if(obj?.errors) alert(obj.errors);
+					callback(obj);
+					//if (rt.match('error')) alert(rt);
+				} else {
+					console.log(`Error: ${xhr.status}`);
+				}
+			};
+	    };
+
+		function sendInstallRequest(event, callback) {
+			const xhr = new XMLHttpRequest();
+			xhr.open("POST", `http://${window.location.host}/install`);
+			xhr.setRequestHeader("Content-Type", "application/json");
+			xhr.send(editor.getValue());
+			
+			xhr.responseType = "text";
+			xhr.onload = () => {
+				if (xhr.readyState == 4 && xhr.status == 200) {
+					const rt = xhr.responseText;
+					console.log(rt);
+					if(rt != "ok") alert(rt);
+					else alert("Installation successful!")
+				} else {
+					console.log(`Error: ${xhr.status}`);
+				}
+			};
+	    };
+
+		const toArray = (obj) =>{
+			if(!obj) return [];
+			return Object.entries(obj).map(x => x[1]);
+		}
+		// Program starts here. Creates a sample graph in the
+		// DOM node with the specified ID. This function is invoked
+		// from the onLoad event handler of the document (see below).
+        const colorMap = {
+            join: 'orange',
+            filt: 'mediumorchid',
+            func: 'mediumpurple',
+            buff: 'SlateGray',
+            cons: 'yellow',
+            cube: 'MediumSpringGreen',
+            expr: 'lightgreen',
+            list: 'LightSalmon',
+            slct: 'DodgerBlue',
+            tabl: 'lightblue',
+            emit: 'red',
+            strm: 'greenyellow',
+			prop: 'MediumVioletRed',
+        }
+        const edgeLabelMap = {
+            right: {
+               	slct: 'DATA',
+                tabl: 'STRUCTURE',
+                emit: 'TRIGGER',
+                buff: 'LIMIT',
+                cube: 'VALUES',
+            },
+            left: {
+				filt: 'IF',
+				slct: 'PROJECTION',
+                tabl: 'DATA',
+                buff: 'STREAM',
+                cube: 'DIMENSIONS',
+                
+            }
+        }
+		function addVertices(graph, data) {
+		    var output = {};
+		    var parent = graph.getDefaultParent();
+		    data?.sources?.concat(toArray(data?.nodes))?.concat(data?.constants)?.forEach((n) => {
+                if(n){
+		       output[n.id] =   graph.insertVertex(parent, null, `[${n.id}] ${n.text}`, 0, 0, 80, 30, `fillColor=${colorMap[n.type]||'white'}`);
+                }
+		    });
+		    return output;
+		}
+
+		function addEdges(graph, vertices,  data) {
+		    var output = {};
+		    var parent = graph.getDefaultParent();
+		    toArray(data?.nodes).forEach((n) => {
+				console.log("node");
+                if(n.inputs?.length === 2 || n.type === "join") {
+		        graph.insertEdge(
+                    parent,
+                    null,
+                    `${edgeLabelMap.left?.[n.type]||''}`, 
+                    vertices?.[n.inputs[0]],
+                    vertices?.[n.id], 
+                    'exitPerimeter=1;exitX=0.5;exitY=1;entryX=0;entryY=0;entryPerimeter=1;labelBackgroundColor=white;'
+                );
+		        graph.insertEdge(
+                    parent, 
+                    null, 
+                    `${edgeLabelMap.right?.[n.type]||''}`, 
+                    vertices?.[n.inputs[1]],  
+                    vertices?.[n.id], 
+                    'exitY=1;exitPerimeter=1;exitX=0.5;entryX=1;entryY=0;entryPerimeter=1;labelBackgroundColor=white;'
+                );
+					if(n.inputs.length === 3) {
+						// join condition
+						graph.insertEdge(
+							parent, 
+							null, 
+							"CONDITION", 
+							vertices?.[n.inputs[2]],  
+							vertices?.[n.id], 
+							'exitY=1;exitPerimeter=1;exitX=0.5;entryX=0.5;entryY=0;entryPerimeter=1;labelBackgroundColor=white;'
+						);
+					}
+
+                } else if(n.inputs) {
+	                n.inputs.forEach((i, index) => {
+	                    graph.insertEdge(
+	                        parent, 
+	                        null, 
+	                        `${n.type==='list' ? index :''}`, 
+	                        vertices?.[i],  
+	                        vertices?.[n.id], 
+	                        'exitY=1;exitPerimeter=1;exitX=0.5;entryY=0;entryPerimeter=1;labelBackgroundColor=white;'
+	                    );
+	                });
+                }
+		    });
+		    return output;
+		}
+
+
+        function draw(graph, data){
+                var layout = new mxHierarchicalLayout(graph);
+                layout.parallelEdgeSpacing = 40;
+                layout.interRankCellSpacing = 100;
+
+                layout.edgeStyle = mxHierarchicalEdgeStyle.STRAIGHT;
+                layout.intraCellSpacing = 100;
+            	
+            	
+
+	            // Load cells and layouts the graph
+				graph.getModel().beginUpdate();
+				try
+				{
+                    
+					
+					
+				    const vertices = addVertices(graph, data);
+    	            console.log(vertices);
+				    const edges = addEdges(graph, vertices, data);
+				    console.log(edges);
+				//	var e1 = graph.insertEdge(parent, null, 'banana', v1, v2);
+				
+					
+					// Executes the layout
+                    layout.execute( graph.getDefaultParent());
+				}
+				finally
+				{
+					// Updates the display
+					graph.getModel().endUpdate();
+				}
+            
+        }
+		
+		function main(container)
+		{
+			// Checks if browser is supported
+			if (!mxClient.isBrowserSupported())
+			{
+				// Displays an error message if the browser is
+				// not supported.
+				mxUtils.error('Browser is not supported!', 200, false);
+			}
+			else
+			{
+				// Creates the graph inside the given container
+				var graph = new mxGraph(container);
+				
+                
+				
+				// Adds rubberband selection
+				new mxRubberband(graph);
+				
+				// Changes the default vertex style in-place
+				var style = graph.getStylesheet().getDefaultVertexStyle();
+				style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter;
+				style[mxConstants.STYLE_GRADIENTCOLOR] = 'white';
+				style[mxConstants.STYLE_PERIMETER_SPACING] = 2;
+				//style[mxConstants.STYLE_ROUNDED] = true;
+				style[mxConstants.STYLE_SHADOW] = true;
+				
+				style = graph.getStylesheet().getDefaultEdgeStyle();
+				style[mxConstants.STYLE_ROUNDED] = true;
+
+				// Creates a layout algorithm to be used
+				// with the graph
+				var layout = new mxHierarchicalLayout(graph);
+				layout.parallelEdgeSpacing = 40;
+				layout.interRankCellSpacing = 100;
+				
+				layout.edgeStyle = mxHierarchicalEdgeStyle.STRAIGHT;
+				layout.intraCellSpacing = 100;
+				var organic = new mxFastOrganicLayout(graph);
+				organic.forceConstant = 120;
+				
+				var parent = graph.getDefaultParent();
+			
+				var buttonBox = document.getElementById('buttonBox');
+
+				var button = document.createElement('button');
+				button.classList.add('button-7');
+				mxUtils.write(button, 'Parse');
+				
+				mxEvent.addListener(button, 'click', async function(evt){
+					await sendQueryRequest(evt, (obj) => {
+						try {
+                        data = obj;
+                        graph.removeCells(graph.getChildVertices(graph.getDefaultParent()));
+	                    graph.removeCells(graph.getChildEdges(graph.getDefaultParent()));
+	                    draw(graph, data);
+					} catch(e){ alert(e);}
+					});
+					graphDesc = editor.getValue();
+					if(!graphDesc) return;
+					
+				});
+
+				buttonBox.appendChild(button);
+
+				// // Adds a button to execute the layout
+				// var button = document.createElement('button');
+				// button.classList.add('button-8');
+				// mxUtils.write(button, 'Hierarchical');
+				// mxEvent.addListener(button, 'click', function(evt)
+				// {
+				// 	layout.execute(parent);
+				// });
+				// buttonBox.appendChild(button);
+
+				// // Adds a button to execute the layout
+				// var button = document.createElement('button');
+				// button.classList.add('button-8');
+				// mxUtils.write(button, 'Organic');
+				
+				// mxEvent.addListener(button, 'click', function(evt)
+				// {
+				// 	organic.execute(parent);
+				// });
+
+				// buttonBox.appendChild(button);
+
+				var button = document.createElement('button');
+				button.classList.add('button-7');
+				mxUtils.write(button, 'Install');
+				
+				mxEvent.addListener(button, 'click', function(evt)
+				{
+					sendInstallRequest(evt);
+				});
+				buttonBox.appendChild(button);
+
+				let data =  {
+                    sources: [{text: 'Insert JSON ', type:'slct', id: 0}],
+                    nodes: {"id": {text: 'click render!', type:'list', id: 1, inputs:[0]}}
+				};
+
+                draw(graph,  data);
+				if (mxClient.IS_QUIRKS)
+				{
+					document.body.style.overflow = 'hidden';
+					new mxDivResizer(container);
+				}
+			}
+		};
+	</script>
+</body>
+</html>

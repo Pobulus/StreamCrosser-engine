@@ -1,0 +1,11 @@
+[
+    [1,true,  "RED",     255,    0,      0],
+    [2,true,  "GREEN",     0,    255,      0],
+    [3,true,  "BLUE",      0,      0,    255],
+    [4,false, "MAGENTA", 255,    0,      255],
+    [5,false, "YELLOW",    255,    255,      0],
+    [6,false, "CYAN",      0,      255,    255],
+    [7,false, "WHITE",   255,    255,      255],
+    [8,false, "BLACK",     0,    0,      0],
+    [9,false, "GRAY",      128,      128,    128]
+]
