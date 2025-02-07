@@ -1,46 +1,67 @@
 <html>
-    <head>
-        <meta charset="utf-8" />
-        <style>
-            body {
-                font-family: monospace;
-                background-color: #aaa;
-            }
-            main {
-                background-color: #eee;
-                width: 75vw;
-                max-width: 800px;
-                height: 100%;
-                top: 0%;
-                position: absolute;
-                left: 50%;
-                transform: translate(-50%);
-                padding: 1vmin;
-                text-align: justify;
-            }
-            td {vertical-align: top;}
-            table {border-spacing: 10px;}
-            @media only screen and (orientation: portrait) {
-                body{
-                    background: #544c5f;
-                }
-                main {
-                    position: absolute;
-                    padding: 1vmin;
-                    width: 98%;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <main>
-            <h1>Stream Crosser</h1>
-            <table>
-                <tr><td><a target="_blank" href="streamSim/">Stream&nbsp;Simulator</a></td><td>wyświetla listę zdefiniowanych strumieni wejściowych i umożliwia przesłanie pojedynczego wiersza danych lub ustawienie automatycznego wysyłania co zadany czas</td></tr>
-                <tr><td><a target="_blank" href="queryPanel/">Query Panel</a></td><td>pozwala sparsować zapytanie i zainstalować je w silniku, wyświetla podgląd grafu</td></tr>
-                <tr><td><a target="_blank" href="outputPanel/">Output Panel</a></td><td>wyświetla wyniki wyjść zdefiniowanych w obecnym zapytaniu</td></tr>
-
-            </table>
-        </main>
-    </body>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        font-family: monospace;
+        background-color: #aaa;
+      }
+      main {
+        background-color: #eee;
+        width: 75vw;
+        max-width: 800px;
+        height: 100%;
+        top: 0%;
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%);
+        padding: 1vmin;
+        text-align: justify;
+      }
+      td {
+        vertical-align: top;
+      }
+      table {
+        border-spacing: 10px;
+      }
+      @media only screen and (orientation: portrait) {
+        body {
+          background: #544c5f;
+        }
+        main {
+          position: absolute;
+          padding: 1vmin;
+          width: 98%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Stream Crosser</h1>
+      <table>
+        <tr>
+          <td>
+            <a target="_blank" href="streamSim/">Stream&nbsp;Simulator</a>
+          </td>
+          <td>
+            wyświetla listę zdefiniowanych strumieni wejściowych i umożliwia
+            przesłanie pojedynczego wiersza danych lub ustawienie automatycznego
+            wysyłania co zadany czas
+          </td>
+        </tr>
+        <tr>
+          <td><a target="_blank" href="queryPanel/">Query Panel</a></td>
+          <td>
+            pozwala sparsować zapytanie i zainstalować je w silniku, wyświetla
+            podgląd grafu
+          </td>
+        </tr>
+        <tr>
+          <td><a target="_blank" href="outputPanel/">Output Panel</a></td>
+          <td>wyświetla wyniki wyjść zdefiniowanych w obecnym zapytaniu</td>
+        </tr>
+      </table>
+    </main>
+  </body>
 </html>
